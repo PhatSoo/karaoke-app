@@ -22,5 +22,5 @@ export default function Dashboard() {
     })();
   }, [push]);
 
-  return <></>;
+  return <>Dashboard</>;
 }
