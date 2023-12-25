@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 
 interface IProps {
@@ -5,6 +6,8 @@ interface IProps {
 }
 
 const Card = ({ rooms }: IProps) => {
+  const handleOrderClick = () => {};
+
   return (
     <>
       {rooms.map((room, idx) => (
@@ -24,7 +27,12 @@ const Card = ({ rooms }: IProps) => {
                 <button className="btn btn-warning w-32">Đặt phòng</button>
               ) : (
                 <>
-                  <button className="btn btn-primary w-32">Order</button>
+                  <button
+                    className="btn btn-primary w-32"
+                    onClick={handleOrderClick}
+                  >
+                    Order
+                  </button>
                   <button className="btn btn-accent w-32">Thanh toán</button>
                 </>
               )}

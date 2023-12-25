@@ -30,5 +30,8 @@ const config: Config = {
     },
   },
   plugins: [require("daisyui")],
+  daisyui: {
+    theme: ["cupcake", "dracula", "aqua"],
+  },
 };
 export default config;

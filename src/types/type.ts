@@ -4,11 +4,12 @@ interface IRooms {
 }
 
 interface IProducts {
+  id?: number;
   product_name: string;
   price: number;
   category_id: {
     id: number;
-    name: string;
+    category_name: string;
   };
   image: string;
   quantity: number;
