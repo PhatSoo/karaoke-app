@@ -238,6 +238,7 @@ const Product = () => {
       const createProduct = await create(formData);
       if (createProduct.success) {
         setAddNewClick(false);
+        setUpdateChange((prev) => prev + 1);
       }
     };
 
