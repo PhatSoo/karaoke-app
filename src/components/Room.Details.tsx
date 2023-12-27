@@ -2,8 +2,9 @@
 "use client";
 import { getOrderDetails, orderProduct, orderRoom } from "@/app/actions/order";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Toast from "./Toast";
+import { RoomProvider } from "@/app/(home)/page";
 
 interface IProps {
   room: IRooms;
@@ -20,6 +21,8 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
     products.reduce((acc, product) => ({ ...acc, [product.id]: 0 }), {}),
   );
   const [showToast, setShowToast] = useState(false);
+
+  const updatedRoom = useContext(RoomProvider);
 
   useEffect(() => {
     if (isOrder) {
@@ -69,6 +72,7 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
           const res = await orderProduct(orderDetails.id, listOrder);
           if (res.success) {
             onClose();
+            updatedRoom();
           }
         }
       } else {
@@ -79,6 +83,7 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
         );
         if (res.success) {
           onClose();
+          updatedRoom();
         }
       }
     } else if (allZero && isOrder) {

@@ -29,7 +29,19 @@ const Payment = ({ onClose }: IProps) => {
         >
           <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
             <div>
-              <div className="overflow-x-auto"></div>
+              <div className="overflow-x-auto">
+                <div className="grid grid-cols-2">
+                  <div>
+                    <p>Giá dịch vụ</p>
+                  </div>
+                  <div>b</div>
+
+                  <div>
+                    <p>Số giờ sử dụng</p>
+                  </div>
+                  <div>b</div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex flex-col gap-4 border-t-2 px-4 py-3 sm:px-6">

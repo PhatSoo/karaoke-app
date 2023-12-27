@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { listCate } from "@/app/actions/category";
-import { create, listProd } from "@/app/actions/product";
+import { create, deleteMultiple, listProdByAdmin } from "@/app/actions/product";
 import Details from "@/components/Product.Details";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
-const colors = ["primary", "secondary", "accent"];
+const colors = ["badge-primary", "badge-secondary", "badge-accent"];
 
 let categoryColors: { [key: string]: string } = {};
 
@@ -34,7 +34,7 @@ const Product = () => {
   useEffect(() => {
     (async () => {
       const listCategory = await listCate();
-      const listProduct = await listProd();
+      const listProduct = await listProdByAdmin();
 
       if (listCategory.success) {
         const categoryList = listCategory.data;
@@ -94,6 +94,15 @@ const Product = () => {
     setIsModalOpen(true);
   };
 
+  const handleDeleteMultiple = async () => {
+    const ids: number[] = selectedItems.map((idx) => data[idx].id);
+    const res = await deleteMultiple(ids);
+
+    if (res) {
+      setUpdateChange((prev) => (prev += 1));
+    }
+  };
+
   const renderListItem = () => {
     return (
       <div className="flex-1 rounded-xl border p-5">
@@ -116,7 +125,12 @@ const Product = () => {
                 <th>Category</th>
                 <th>
                   {selectedItems.length > 0 && (
-                    <button className="btn btn-warning">Xóa</button>
+                    <button
+                      className="btn btn-warning"
+                      onClick={handleDeleteMultiple}
+                    >
+                      Xóa
+                    </button>
                   )}
                 </th>
               </tr>
@@ -157,7 +171,7 @@ const Product = () => {
                     </td>
                     <td>
                       <div
-                        className={`badge p-3 badge-${
+                        className={`badge p-3 ${
                           categoryColors[item.category_id.id]
                         } `}
                       >
@@ -238,6 +252,12 @@ const Product = () => {
       const createProduct = await create(formData);
       if (createProduct.success) {
         setAddNewClick(false);
+        setProductName("");
+        setPrice("");
+        setUnit("");
+        setQuantity("");
+        setCategorySelected("");
+        setImageLink("");
         setUpdateChange((prev) => prev + 1);
       }
     };

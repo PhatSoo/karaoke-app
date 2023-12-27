@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { listCate } from "@/app/actions/category";
-import { update } from "@/app/actions/product";
+import { remove, update } from "@/app/actions/product";
 import React, { useEffect, useState } from "react";
 
 interface IProps {
@@ -92,6 +92,17 @@ const Details = ({ data, onClose, updateState }: IProps) => {
     if (createProduct.success) {
       updateState();
       onClose();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (data && data.id) {
+      const res = await remove(data.id);
+
+      if (res.success) {
+        onClose();
+        updateState();
+      }
     }
   };
 
@@ -209,6 +220,17 @@ const Details = ({ data, onClose, updateState }: IProps) => {
                       {localData?.category_id.category_name}
                     </div>
 
+                    <div className="p-2 font-bold">Status</div>
+                    <div
+                      className={`badge my-auto p-2 ${
+                        localData?.deletedAt
+                          ? "badge-secondary"
+                          : "badge-primary"
+                      }`}
+                    >
+                      {localData?.deletedAt ? "Removed" : "Showed"}
+                    </div>
+
                     <div className="col-span-2">
                       <div className="p-2 font-bold">Image</div>
                       <img
@@ -256,8 +278,10 @@ const Details = ({ data, onClose, updateState }: IProps) => {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-warning w-24"
-                  onClick={onClose}
+                  className={`btn btn-warning w-24 ${
+                    localData?.deletedAt && "btn-disabled"
+                  }`}
+                  onClick={handleDelete}
                 >
                   Delete
                 </button>

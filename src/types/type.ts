@@ -6,7 +6,7 @@ interface IRooms {
 }
 
 interface IProducts {
-  id?: number;
+  id: number;
   product_name: string;
   price: number;
   category_id: {
@@ -16,6 +16,7 @@ interface IProducts {
   image: string;
   quantity: number;
   unit: string;
+  deletedAt?: Date;
 }
 
 interface ICategories {
