@@ -1,9 +1,10 @@
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Details from "./Room.Details";
 import { listEmployee } from "@/app/actions/employee";
 import { listProd } from "@/app/actions/product";
 import Payment from "./Room.Payment";
+import { RoomProvider } from "@/app/(home)/page";
 
 interface IProps {
   rooms: IRooms[];
@@ -16,6 +17,8 @@ const Card = ({ rooms }: IProps) => {
   const [employeeData, setEmployeeData] = useState<IEmployees[]>([]);
   const [productData, setProductData] = useState<IProducts[]>([]);
   const [orderProduct, setOrderProduct] = useState(false);
+
+  const updatedRoom = useContext(RoomProvider);
 
   useEffect(() => {
     (async () => {
@@ -30,7 +33,7 @@ const Card = ({ rooms }: IProps) => {
         setProductData(product.data);
       }
     })();
-  }, []);
+  }, [updatedRoom]);
 
   const handleOrderRoomClick = (idx: number) => {
     setOrderRoom(true);
@@ -41,6 +44,11 @@ const Card = ({ rooms }: IProps) => {
     setSelectedRoom(idx);
     setOrderRoom(true);
     setOrderProduct(true);
+  };
+
+  const handlePaymentClick = (idx: number) => {
+    setSelectedRoom(idx);
+    setPayment(true);
   };
 
   return (
@@ -75,7 +83,7 @@ const Card = ({ rooms }: IProps) => {
                   </button>
                   <button
                     className="btn btn-accent w-32"
-                    onClick={() => setPayment(true)}
+                    onClick={() => handlePaymentClick(idx)}
                   >
                     Thanh toán
                   </button>
@@ -91,6 +99,7 @@ const Card = ({ rooms }: IProps) => {
           onClose={() => {
             setOrderRoom(false);
             setOrderProduct(false);
+            updatedRoom();
           }}
           room={rooms[selectedRoom]}
           employee={employeeData}
@@ -101,8 +110,11 @@ const Card = ({ rooms }: IProps) => {
 
       {payment && (
         <Payment
+          room={rooms[selectedRoom]}
+          products={productData}
           onClose={() => {
             setPayment(false);
+            updatedRoom();
           }}
         />
       )}

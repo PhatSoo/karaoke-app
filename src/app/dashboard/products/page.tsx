@@ -3,6 +3,7 @@
 import { listCate } from "@/app/actions/category";
 import { create, deleteMultiple, listProdByAdmin } from "@/app/actions/product";
 import Details from "@/components/Product.Details";
+import Toast from "@/components/Toast";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
 const colors = ["badge-primary", "badge-secondary", "badge-accent"];
@@ -18,6 +19,7 @@ const Product = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [category, setCategory] = useState<ICategories[]>([]);
   const [updateChange, setUpdateChange] = useState(0);
+  const [error, setError] = useState({ show: false, message: "" });
 
   // Form add new
   const [addNewClick, setAddNewClick] = useState(false);
@@ -98,7 +100,17 @@ const Product = () => {
     const ids: number[] = selectedItems.map((idx) => data[idx].id);
     const res = await deleteMultiple(ids);
 
-    if (res) {
+    console.log("====================================");
+    console.log(res);
+    console.log("====================================");
+
+    if (!res.success) {
+      setError({ show: true, message: res.message });
+
+      setTimeout(() => {
+        setError({ show: false, message: "" });
+      }, 3000);
+    } else {
       setUpdateChange((prev) => (prev += 1));
     }
   };
@@ -423,6 +435,8 @@ const Product = () => {
           updateState={() => setUpdateChange((prev) => prev + 1)}
         />
       )}
+
+      {error.show && <Toast message={error.message} type="info" />}
     </>
   );
 };

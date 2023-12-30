@@ -3,6 +3,7 @@
 import { listCate } from "@/app/actions/category";
 import { remove, update } from "@/app/actions/product";
 import React, { useEffect, useState } from "react";
+import Toast from "./Toast";
 
 interface IProps {
   data: IProducts | null | undefined;
@@ -13,6 +14,7 @@ interface IProps {
 const Details = ({ data, onClose, updateState }: IProps) => {
   const [editClick, setEditClick] = useState(false);
   const [category, setCategory] = useState<ICategories[]>([]);
+  const [showToast, setShowToast] = useState({ show: false, message: "" });
 
   let local: IProducts | null = null;
 
@@ -97,11 +99,19 @@ const Details = ({ data, onClose, updateState }: IProps) => {
 
   const handleDelete = async () => {
     if (data && data.id) {
-      const res = await remove(data.id);
+      if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này!")) {
+        const res = await remove(data.id);
 
-      if (res.success) {
-        onClose();
-        updateState();
+        if (res.success) {
+          onClose();
+          updateState();
+        } else {
+          setShowToast({ show: true, message: res.message });
+
+          setTimeout(() => {
+            setShowToast({ show: false, message: "" });
+          }, 3000);
+        }
       }
     }
   };
@@ -298,6 +308,7 @@ const Details = ({ data, onClose, updateState }: IProps) => {
           </div>
         </div>
       </div>
+      {showToast.show && <Toast message={showToast.message} type="info" />}
     </div>
   );
 };

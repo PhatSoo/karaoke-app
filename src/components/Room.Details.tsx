@@ -2,9 +2,8 @@
 "use client";
 import { getOrderDetails, orderProduct, orderRoom } from "@/app/actions/order";
 import Image from "next/image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Toast from "./Toast";
-import { RoomProvider } from "@/app/(home)/page";
 
 interface IProps {
   room: IRooms;
@@ -21,8 +20,7 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
     products.reduce((acc, product) => ({ ...acc, [product.id]: 0 }), {}),
   );
   const [showToast, setShowToast] = useState(false);
-
-  const updatedRoom = useContext(RoomProvider);
+  const [error, setError] = useState({ show: false, message: "", position: 0 });
 
   useEffect(() => {
     if (isOrder) {
@@ -41,56 +39,75 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
   }, [isOrder, room]);
 
   const handleChange = (id: number) => (event: { target: { value: any } }) => {
-    setProductQuantities({
-      ...productQuantities,
-      [id]: event.target.value,
-    });
+    const value =
+      event.target.value === "" || isNaN(event.target.value)
+        ? 0
+        : event.target.value;
+
+    if (products.find((item) => item.id === id).quantity < value) {
+      setError({
+        show: true,
+        message: "Không đủ số lượng yêu cầu",
+        position: id,
+      });
+    } else {
+      setError({
+        show: false,
+        message: "",
+        position: 0,
+      });
+
+      setProductQuantities({
+        ...productQuantities,
+        [id]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
+
     const allZero = Object.values(productQuantities).every(
       (quantity) => quantity === 0 || quantity === "",
     );
 
     const listOrder: { product_id: string; quantity: unknown }[] = [];
 
-    if (!allZero) {
-      const nonZeroEntries = Object.entries(productQuantities).filter(
-        ([key, value]) => value !== 0,
-      );
+    const nonZeroEntries = Object.entries(productQuantities).filter(
+      ([key, value]) => value !== 0,
+    );
 
-      nonZeroEntries.map(([key, value]) =>
-        listOrder.push({
-          product_id: key,
-          quantity: value,
-        }),
-      );
+    nonZeroEntries.map(([key, value]) =>
+      listOrder.push({
+        product_id: key,
+        quantity: value,
+      }),
+    );
 
-      if (isOrder) {
-        if (orderDetails) {
-          const res = await orderProduct(orderDetails.id, listOrder);
-          if (res.success) {
-            onClose();
-            updatedRoom();
-          }
-        }
-      } else {
-        const res = await orderRoom(
-          room.id,
-          parseInt(selectedEmployee),
-          listOrder,
-        );
+    if (isOrder) {
+      if (allZero) {
+        setShowToast(true);
+
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+        return;
+      }
+      if (orderDetails) {
+        const res = await orderProduct(orderDetails.id, listOrder);
         if (res.success) {
           onClose();
-          updatedRoom();
         }
       }
-    } else if (allZero && isOrder) {
-      setShowToast(true);
-
-      setTimeout(() => setShowToast(false), 3000);
-      return;
+    } else {
+      const res = await orderRoom(
+        room.id,
+        parseInt(selectedEmployee),
+        listOrder,
+      );
+      if (res.success) {
+        onClose();
+      }
     }
   };
 
@@ -113,9 +130,12 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
   };
 
   const countTotalPrice = () => {
-    return Math.ceil(
-      (formatTime().milliseconds / 3600000) * room.price + itemPrice(),
-    );
+    const countTime =
+      formatTime().milliseconds < 3600000
+        ? 1
+        : formatTime().milliseconds / 3600000;
+
+    return Math.ceil(countTime * room.price + itemPrice());
   };
 
   const itemPrice = () => {
@@ -269,13 +289,15 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
                   </div>
                 </div>
                 <p className="text-center text-2xl font-bold text-black">
-                  Chọn thức ăn
+                  Chọn dịch vụ
                 </p>
                 <div className="grid grid-cols-4 gap-4 p-2">
                   {products.map((item) => (
                     <div
                       key={item.id}
-                      className="flex flex-col items-center justify-between gap-y-2 rounded-xl border p-2"
+                      className={`flex flex-col items-center justify-between gap-y-2 rounded-xl border p-2 ${
+                        item.quantity === 0 && "pointer-events-none opacity-30"
+                      }`}
                     >
                       <div className="m-auto">
                         <img
@@ -299,6 +321,30 @@ const Details = ({ room, employee, products, isOrder, onClose }: IProps) => {
                         value={productQuantities[item.id]}
                         onChange={handleChange(item.id)}
                       />
+                      {error.show && error.position === item.id && (
+                        <div role="alert" className="alert alert-error">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 shrink-0 stroke-current"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span>{error.message}</span>
+                        </div>
+                      )}
+                      <div>
+                        Tồn kho:{" "}
+                        <span className="text-secondary">
+                          {item.quantity} {item.unit}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
